@@ -1,0 +1,65 @@
+{
+  "entities": {
+    "Report": {
+      "title": "Device Report",
+      "description": "Information about a device usage, registration, or transfer reported by the user.",
+      "type": "object",
+      "properties": {
+        "ngay_bao": {
+          "type": "string",
+          "format": "date",
+          "description": "The date the report is declared"
+        },
+        "nguoi_bao": {
+          "type": "string",
+          "description": "Full name of the hand-over or reporting person"
+        },
+        "nguoi_nhan": {
+          "type": "string",
+          "description": "Full name of the receiving person"
+        },
+        "ten_thiet_bi": {
+          "type": "string",
+          "description": "Name of the device"
+        },
+        "ma_kho": {
+          "type": "string",
+          "description": "Warehouse/Storage code"
+        },
+        "ma_tai_san": {
+          "type": "string",
+          "description": "Asset tracking code"
+        },
+        "serial": {
+          "type": "string",
+          "description": "Device serial number"
+        },
+        "muc_dich": {
+          "type": "string",
+          "description": "Purpose of retrieving or hand-over"
+        },
+        "ngay_ky": {
+          "type": "string",
+          "format": "date",
+          "description": "The date the report is signed"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server time of creation"
+        },
+        "creatorUid": {
+          "type": "string",
+          "description": "UID of the user who created it"
+        }
+      },
+      "required": ["ngay_bao", "nguoi_bao", "ten_thiet_bi", "ma_kho", "serial", "muc_dich", "ngay_ky"]
+    }
+  },
+  "firestore": {
+    "reports/{reportId}": {
+      "schema": "Report",
+      "description": "Public and secure list of device utilization documents."
+    }
+  }
+}

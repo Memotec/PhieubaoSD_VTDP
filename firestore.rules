@@ -1,0 +1,65 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Auth verification helper
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // ID verification helper to prevent resource poisoning
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Helper functions for reading state
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Strict schema & boundary validator for Reports
+    function isValidReport(data) {
+      return data.ngay_bao is string && data.ngay_bao.size() <= 50
+          && data.nguoi_bao is string && data.nguoi_bao.size() <= 200
+          && (!data.keys().contains('nguoi_nhan') || (data.nguoi_nhan is string && data.nguoi_nhan.size() <= 200))
+          && data.ten_thiet_bi is string && data.ten_thiet_bi.size() <= 500
+          && data.ma_kho is string && data.ma_kho.size() <= 100
+          && (!data.keys().contains('ma_tai_san') || (data.ma_tai_san is string && data.ma_tai_san.size() <= 100))
+          && data.serial is string && data.serial.size() <= 100
+          && data.muc_dich is string && data.muc_dich.size() <= 1000
+          && data.ngay_ky is string && data.ngay_ky.size() <= 50
+          && data.creatorUid is string && data.creatorUid.size() <= 128;
+    }
+
+    match /reports/{reportId} {
+      // Secure list query enforcer
+      allow read: if isSignedIn();
+
+      // Creation verification
+      allow create: if isSignedIn()
+                    && isValidId(reportId)
+                    && isValidReport(incoming())
+                    && incoming().creatorUid == request.auth.uid
+                    && incoming().createdAt == request.time;
+
+      // Update validation - restricts edits to owner
+      allow update: if isSignedIn()
+                    && isValidId(reportId)
+                    && isValidReport(incoming())
+                    && incoming().creatorUid == existing().creatorUid
+                    && incoming().creatorUid == request.auth.uid;
+
+      // Delete validation - restricts deletion to owner
+      allow delete: if isSignedIn()
+                    && existing().creatorUid == request.auth.uid;
+    }
+  }
+}

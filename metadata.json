@@ -1,0 +1,8 @@
+{
+  "name": "Remix: Quản lý Phiếu báo Thiết bị",
+  "description": "Hệ thống số hóa phiếu báo sử dụng thiết bị và quản lý kho thiết bị Đội Thông Tin - Trung Tâm Bảo Đảm Kỹ Thuật.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
