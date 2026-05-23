@@ -10,9 +10,10 @@ interface ReportSlipProps {
   onBack: () => void;
   googleToken: string | null;
   setGoogleToken: (token: string | null) => void;
+  onMarkPrinted?: (id: string) => void;
 }
 
-export default function ReportSlip({ record, onBack, googleToken, setGoogleToken }: ReportSlipProps) {
+export default function ReportSlip({ record, onBack, googleToken, setGoogleToken, onMarkPrinted }: ReportSlipProps) {
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailSuccess, setEmailSuccess] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
@@ -130,6 +131,9 @@ export default function ReportSlip({ record, onBack, googleToken, setGoogleToken
       });
 
       setEmailSuccess(true);
+      if (onMarkPrinted) {
+        onMarkPrinted(record.id);
+      }
 
       // Trigger standard print dialogue immediately after success to satisfy "xuất phiếu đồng thời"
       setTimeout(() => {
@@ -175,7 +179,12 @@ export default function ReportSlip({ record, onBack, googleToken, setGoogleToken
           </button>
 
           <button
-            onClick={() => window.print()}
+            onClick={() => {
+              window.print();
+              if (onMarkPrinted) {
+                onMarkPrinted(record.id);
+              }
+            }}
             id="slip-print-btn"
             className="w-full sm:w-auto px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-600/10 transition-all flex items-center justify-center gap-2"
           >

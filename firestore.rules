@@ -36,7 +36,8 @@ service cloud.firestore {
           && data.serial is string && data.serial.size() <= 100
           && data.muc_dich is string && data.muc_dich.size() <= 1000
           && data.ngay_ky is string && data.ngay_ky.size() <= 50
-          && data.creatorUid is string && data.creatorUid.size() <= 128;
+          && data.creatorUid is string && data.creatorUid.size() <= 128
+          && (!data.keys().contains('printed') || data.printed is bool);
     }
 
     match /reports/{reportId} {

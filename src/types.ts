@@ -11,4 +11,5 @@ export interface DeviceReport {
   ngay_ky: string;
   createdAt: any;
   creatorUid: string;
+  printed?: boolean;
 }

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { onAuthStateChanged, signOut, User } from 'firebase/auth';
-import { collection, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
+import { collection, onSnapshot, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db, auth, handleFirestoreError, OperationType } from './firebase';
 import { DeviceReport } from './types';
 import AuthScreen from './components/AuthScreen';
@@ -171,6 +171,30 @@ export default function App() {
     }
   };
 
+  // Handle toggling of 'printed' status for single or multiple items
+  const handleTogglePrinted = async (idOrIds: string | string[], currentStatus: boolean) => {
+    const ids = Array.isArray(idOrIds) ? idOrIds : [idOrIds];
+    if (ids.length === 0) return;
+
+    if (user?.isOffline) {
+      const updated = records.map((r) => 
+        ids.includes(r.id) ? { ...r, printed: currentStatus } : r
+      );
+      setRecords(updated);
+      localStorage.setItem('reports_offline_storage', JSON.stringify(updated));
+      return;
+    }
+
+    const collectionName = 'reports';
+    try {
+      await Promise.all(
+        ids.map((id) => updateDoc(doc(db, collectionName, id), { printed: currentStatus }))
+      );
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, `${collectionName}/${ids.join(',')}`);
+    }
+  };
+
   const handleLogout = async () => {
     try {
       localStorage.removeItem('reports_offline_user');
@@ -332,9 +356,21 @@ export default function App() {
           <div>
             {/* If a record is being viewed for print */}
             {viewingBatch ? (
-              <BatchReportSlip records={viewingBatch} onBack={() => setViewingBatch(null)} googleToken={googleToken} setGoogleToken={setGoogleToken} />
+              <BatchReportSlip
+                records={viewingBatch}
+                onBack={() => setViewingBatch(null)}
+                googleToken={googleToken}
+                setGoogleToken={setGoogleToken}
+                onMarkPrinted={(ids) => handleTogglePrinted(ids, true)}
+              />
             ) : viewingRecord ? (
-              <ReportSlip record={viewingRecord} onBack={() => setViewingRecord(null)} googleToken={googleToken} setGoogleToken={setGoogleToken} />
+              <ReportSlip
+                record={viewingRecord}
+                onBack={() => setViewingRecord(null)}
+                googleToken={googleToken}
+                setGoogleToken={setGoogleToken}
+                onMarkPrinted={(id) => handleTogglePrinted(id, true)}
+              />
             ) : (
               <div>
                 {activeTab === 'form' ? (
@@ -351,6 +387,8 @@ export default function App() {
                       setViewingRecord(null);
                       setViewingBatch(batch);
                     }}
+                    onTogglePrinted={(id, current) => handleTogglePrinted(id, !current)}
+                    onMarkMultiplePrinted={(ids, status) => handleTogglePrinted(ids, status)}
                   />
                 )}
               </div>

@@ -51,6 +51,10 @@
         "creatorUid": {
           "type": "string",
           "description": "UID of the user who created it"
+        },
+        "printed": {
+          "type": "boolean",
+          "description": "Whether the report has been printed or exported"
         }
       },
       "required": ["ngay_bao", "nguoi_bao", "ten_thiet_bi", "ma_kho", "serial", "muc_dich", "ngay_ky"]

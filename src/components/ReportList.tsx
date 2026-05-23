@@ -7,9 +7,11 @@ interface ReportListProps {
   onView: (record: DeviceReport) => void;
   onDelete: (id: string) => void;
   onViewBatch: (records: DeviceReport[]) => void;
+  onTogglePrinted: (id: string, currentStatus: boolean) => void;
+  onMarkMultiplePrinted?: (ids: string[], status: boolean) => void;
 }
 
-export default function ReportList({ records, onView, onDelete, onViewBatch }: ReportListProps) {
+export default function ReportList({ records, onView, onDelete, onViewBatch, onTogglePrinted, onMarkMultiplePrinted }: ReportListProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
@@ -61,6 +63,14 @@ export default function ReportList({ records, onView, onDelete, onViewBatch }: R
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+
+    // Prompt to auto-mark as printed/exported
+    setTimeout(() => {
+      const confirmMark = window.confirm('Xuất báo cáo thành công! Bạn có muốn cập nhật trạng thái "Đã In/Xuất" cho tất cả các phiếu vừa xuất trong danh sách này không?');
+      if (confirmMark && onMarkMultiplePrinted) {
+        onMarkMultiplePrinted(filtered.map(r => r.id), true);
+      }
+    }, 850);
   };
 
   // Toggle single item selection
@@ -213,6 +223,7 @@ export default function ReportList({ records, onView, onDelete, onViewBatch }: R
                   <th className="py-3 px-4">Thông tin cán bộ</th>
                   <th className="py-3 px-4">Chi tiết thiết bị / Mã số</th>
                   <th className="py-3 px-4">Mục đích bàn giao</th>
+                  <th className="py-3 px-4 text-center">In/Xuất file</th>
                   <th className="py-3 px-4 text-center">Tác vụ</th>
                 </tr>
               </thead>
@@ -282,6 +293,21 @@ export default function ReportList({ records, onView, onDelete, onViewBatch }: R
                       </td>
                       <td className="py-4 px-4 text-slate-500 max-w-[200px] truncate" title={record.muc_dich}>
                         {record.muc_dich}
+                      </td>
+                      <td className="py-4 px-4 whitespace-nowrap text-center">
+                        <button
+                          onClick={() => onTogglePrinted(record.id, !!record.printed)}
+                          id={`toggle-printed-${record.id}`}
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[10px] uppercase font-bold tracking-wider transition-all duration-150 cursor-pointer ${
+                            record.printed
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60 hover:bg-emerald-100 hover:text-emerald-800'
+                              : 'bg-slate-100 text-slate-400 border border-slate-200/40 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200/70'
+                          }`}
+                          title={record.printed ? "Nhấn để đánh dấu: Chưa in/xuất" : "Nhấn để đánh dấu: Đã in/xuất"}
+                        >
+                          <Printer className={`w-3.5 h-3.5 ${record.printed ? 'text-emerald-500' : 'text-slate-400'}`} />
+                          <span>{record.printed ? 'Đã In/Xuất' : 'Chưa In/Xuất'}</span>
+                        </button>
                       </td>
                       <td className="py-4 px-4 whitespace-nowrap text-center">
                         <div className="inline-flex items-center gap-1.5">
