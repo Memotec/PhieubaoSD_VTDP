@@ -28,15 +28,21 @@ export default function App() {
   const [viewingRecord, setViewingRecord] = useState<DeviceReport | null>(null);
   const [viewingBatch, setViewingBatch] = useState<DeviceReport[] | null>(null);
   const [googleToken, setGoogleToken] = useState<string | null>(null);
+  const [showOfflineOption, setShowOfflineOption] = useState(false);
 
   // Authenticate user status
   useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowOfflineOption(true);
+    }, 4000);
+
     const savedOfflineUser = localStorage.getItem('reports_offline_user');
     if (savedOfflineUser) {
       try {
         setUser(JSON.parse(savedOfflineUser));
         setAuthChecked(true);
         setLoading(false);
+        clearTimeout(timer);
         return;
       } catch (e) {
         console.error(e);
@@ -46,12 +52,31 @@ export default function App() {
     const unsubscribeAuth = onAuthStateChanged(auth, (usr) => {
       setUser(usr);
       setAuthChecked(true);
+      clearTimeout(timer);
       if (!usr) {
         setLoading(false);
       }
     });
-    return () => unsubscribeAuth();
+
+    return () => {
+      unsubscribeAuth();
+      clearTimeout(timer);
+    };
   }, []);
+
+  const handleBypassOffline = () => {
+    const offlineUser = {
+      uid: 'offline_guest_user',
+      displayName: 'Cán bộ Khách (Offline)',
+      email: 'offline_guest@thongtin.gov',
+      isOffline: true,
+      isAnonymous: true
+    };
+    setUser(offlineUser);
+    localStorage.setItem('reports_offline_user', JSON.stringify(offlineUser));
+    setAuthChecked(true);
+    setLoading(false);
+  };
 
   // Sync Reports database in real-time when authenticated
   useEffect(() => {
@@ -174,10 +199,27 @@ export default function App() {
 
   if (!authChecked) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="flex flex-col items-center gap-3">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+        <div className="flex flex-col items-center gap-4 max-w-sm text-center">
           <div className="w-10 h-10 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin" />
-          <p className="text-sm font-medium text-slate-500">Đang khởi tạo bảo mật...</p>
+          <div>
+            <p className="text-sm font-semibold text-slate-700 animate-pulse">Đang khởi tạo bảo mật...</p>
+            <p className="text-xs text-slate-400 mt-1">Hệ thống đang thiết lập liên kết an toàn tới Google Cloud.</p>
+          </div>
+          {showOfflineOption && (
+            <div className="mt-2 p-4 bg-white border border-slate-200 rounded-2xl shadow-sm space-y-3 animate-fade-in">
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Liên kết bảo mật đang mất nhiều thời gian hơn dự kiến do kết nối mạng. Bạn có thể chuyển sang chế độ ngoại tuyến ngay:
+              </p>
+              <button
+                onClick={handleBypassOffline}
+                id="bypass-offline-loading-btn"
+                className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-xl text-xs font-bold shadow-sm transition-all cursor-pointer"
+              >
+                Trải nghiệm Chế độ Offline
+              </button>
+            </div>
+          )}
         </div>
       </div>
     );

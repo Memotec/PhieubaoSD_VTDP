@@ -1,9 +1,10 @@
 {
-  "projectId": "remixed-project-id",
-  "appId": "remixed-app-id",
-  "apiKey": "remixed-api-key",
-  "authDomain": "remixed-auth-domain",
-  "storageBucket": "remixed-storage-bucket",
-  "messagingSenderId": "remixed-messaging-sender-id",
-  "measurementId": "remixed-measurement-id"
+  "projectId": "onyx-yarn-1cf5x",
+  "appId": "1:444431243941:web:2753ac7cbfcab0d94f4b4c",
+  "apiKey": "AIzaSyDAfGty6u1Q4jBZPlfRIeeNrHdENkW2VUk",
+  "authDomain": "onyx-yarn-1cf5x.firebaseapp.com",
+  "firestoreDatabaseId": "ai-studio-fd5d37b5-3da6-4ef8-9116-8ae77d2dc49f",
+  "storageBucket": "onyx-yarn-1cf5x.firebasestorage.app",
+  "messagingSenderId": "444431243941",
+  "measurementId": ""
 }
